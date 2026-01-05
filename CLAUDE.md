@@ -45,16 +45,14 @@ helm install m5stack-airq-exporter ./charts/m5stack-airq-exporter --set config.a
 ## Release Process
 
 ```bash
-# 1. Create release (updates Chart.yaml, commits, and tags)
-task release VERSION=0.1.0
-
-# 2. Push to trigger GitHub Actions
-git push && git push --tags
+# Create and push tag (triggers GitHub Actions)
+task release VERSION=0.2.0
 ```
 
-GitHub Actions will:
-- Run tests
-- Build and push Docker image to `ghcr.io/suzutan/m5stack_airq_exporter:v0.1.0`
+GitHub Actions (release.yaml) will:
+1. Run tests
+2. Build and push Docker image to `ghcr.io/suzutan/m5stack_airq_exporter:<version>`
+3. Update `charts/m5stack-airq-exporter/Chart.yaml` (version, appVersion) and push to master
 
 Helm chart uses `appVersion` as the default image tag.
 
