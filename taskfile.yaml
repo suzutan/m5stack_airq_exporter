@@ -93,7 +93,7 @@ tasks:
       - task: build
 
   release:
-    desc: Create a new release (usage: task release VERSION=0.1.0)
+    desc: "Create a new release (usage: task release VERSION=0.1.0)"
     preconditions:
       - sh: test -n "{{.VERSION}}"
         msg: "VERSION is required. Usage: task release VERSION=0.1.0"
@@ -101,8 +101,8 @@ tasks:
         msg: "Working directory is not clean. Commit or stash changes first."
     cmds:
       - task: ci
-      - sed -i 's/^version:.*/version: {{.VERSION}}/' charts/m5stack-airq-exporter/Chart.yaml
-      - sed -i 's/^appVersion:.*/appVersion: "{{.VERSION}}"/' charts/m5stack-airq-exporter/Chart.yaml
+      - sed -i 's/^version:.*/version:\ {{.VERSION}}/' charts/m5stack-airq-exporter/Chart.yaml
+      - sed -i 's/^appVersion:.*/appVersion:\ "{{.VERSION}}"/' charts/m5stack-airq-exporter/Chart.yaml
       - git add charts/m5stack-airq-exporter/Chart.yaml
       - git commit -m "Release v{{.VERSION}}"
       - git tag -a v{{.VERSION}} -m "Release v{{.VERSION}}"
