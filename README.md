@@ -84,6 +84,66 @@ serviceMonitor:
   scrapeTimeout: 10s
 ```
 
+## API Response Format
+
+This exporter works with any HTTP endpoint that returns data in the following format. You can use a custom endpoint or proxy as long as it conforms to this structure.
+
+### Expected Response Structure
+
+```json
+{
+  "code": 200,
+  "msg": "success",
+  "data": {
+    "dataToken": "...",
+    "dataType": "...",
+    "name": "...",
+    "value": "{\"sen55\":{...},\"scd40\":{...},\"profile\":{...}}",
+    "createTime": "...",
+    "updateTime": "..."
+  }
+}
+```
+
+### Sensor Data Format (inside `data.value`)
+
+The `value` field contains a JSON string (may be escaped) with the following structure:
+
+```json
+{
+  "sen55": {
+    "pm1.0": 3.0,
+    "pm2.5": 4.0,
+    "pm4.0": 4.0,
+    "pm10.0": 4.0,
+    "humidity": 47.5,
+    "temperature": 25.3,
+    "voc": 100,
+    "nox": 1
+  },
+  "scd40": {
+    "co2": 800,
+    "humidity": 45.0,
+    "temperature": 26.0
+  },
+  "profile": {
+    "nickname": "Living Room"
+  }
+}
+```
+
+### Field Requirements
+
+| Field | Required | Description |
+|-------|----------|-------------|
+| `code` | Yes | Must be `200` for success |
+| `data.value` | Yes | JSON string containing sensor data |
+| `sen55.*` | Optional | SEN55 sensor readings (PM, humidity, temperature, VOC, NOx) |
+| `scd40.*` | Optional | SCD40 sensor readings (CO2, humidity, temperature) |
+| `profile.nickname` | Optional | Device label (currently not exported as metric) |
+
+Missing sensor fields will result in zero values for those metrics.
+
 ## Endpoints
 
 | Path | Description |
