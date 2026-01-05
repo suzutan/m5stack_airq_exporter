@@ -1,0 +1,93 @@
+version: '3'
+
+vars:
+  BINARY_NAME: m5stack_airq_exporter
+  AIRQ_DATA_URL: https://ezdata2.m5stack.com/api/v2/4827E2E31384/dataMacByKey/raw
+
+tasks:
+  default:
+    desc: Show available tasks
+    cmds:
+      - task --list
+
+  build:
+    desc: Build the application
+    cmds:
+      - go build -o {{.BINARY_NAME}} ./cmd/exporter
+
+  run:
+    desc: Run the application locally
+    env:
+      AIRQ_DATA_URL: '{{.AIRQ_DATA_URL}}'
+    cmds:
+      - go run ./cmd/exporter
+
+  test:
+    desc: Run all tests
+    cmds:
+      - go test -v ./...
+
+  test:coverage:
+    desc: Run tests with coverage report
+    cmds:
+      - go test -v -coverprofile=coverage.out ./...
+      - go tool cover -html=coverage.out -o coverage.html
+
+  lint:
+    desc: Run linter (requires golangci-lint)
+    preconditions:
+      - sh: command -v golangci-lint
+        msg: "golangci-lint is not installed. Install: https://golangci-lint.run/usage/install/"
+    cmds:
+      - golangci-lint run
+
+  vet:
+    desc: Run go vet
+    cmds:
+      - go vet ./...
+
+  fmt:
+    desc: Format code
+    cmds:
+      - go fmt ./...
+
+  tidy:
+    desc: Tidy go modules
+    cmds:
+      - go mod tidy
+
+  clean:
+    desc: Clean build artifacts
+    cmds:
+      - rm -f {{.BINARY_NAME}}
+      - rm -f coverage.out coverage.html
+
+  docker:build:
+    desc: Build Docker image
+    cmds:
+      - docker build -t {{.BINARY_NAME}}:latest .
+
+  docker:run:
+    desc: Run Docker container
+    cmds:
+      - docker run --rm -p 8080:8080 -e AIRQ_DATA_URL={{.AIRQ_DATA_URL}} {{.BINARY_NAME}}:latest
+
+  helm:lint:
+    desc: Lint Helm chart
+    cmds:
+      - helm lint ./charts/airq-exporter --set config.airqDataUrl={{.AIRQ_DATA_URL}}
+
+  helm:template:
+    desc: Render Helm chart templates
+    cmds:
+      - helm template airq-exporter ./charts/airq-exporter --set config.airqDataUrl={{.AIRQ_DATA_URL}}
+
+  ci:
+    desc: Run CI pipeline locally (clean, tidy, fmt, vet, test, build)
+    cmds:
+      - task: clean
+      - task: tidy
+      - task: fmt
+      - task: vet
+      - task: test
+      - task: build
