@@ -8,8 +8,6 @@
     "helpers:pinGitHubActionDigests"
   ],
   "labels": ["dependencies"],
-  "timezone": "Asia/Tokyo",
-  "schedule": ["before 9am on monday"],
   "prHourlyLimit": 5,
   "prConcurrentLimit": 10,
   "packageRules": [
