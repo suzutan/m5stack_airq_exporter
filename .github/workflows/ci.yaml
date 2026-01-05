@@ -20,7 +20,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.25'
+          go-version-file: go.mod
 
       - name: Download dependencies
         run: go mod download
@@ -43,7 +43,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.25'
+          go-version-file: go.mod
 
       - name: Run golangci-lint
         uses: golangci/golangci-lint-action@v6
@@ -60,7 +60,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.25'
+          go-version-file: go.mod
 
       - name: Build
         run: go build -o m5stack_airq_exporter ./cmd/exporter
