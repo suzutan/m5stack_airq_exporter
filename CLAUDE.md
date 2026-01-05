@@ -28,6 +28,8 @@ task docker:run     # Run Docker container
 
 task helm:lint      # Lint Helm chart
 task helm:template  # Render Helm chart templates
+
+task release VERSION=x.y.z  # Create a new release
 ```
 
 ### Direct Commands
@@ -37,8 +39,24 @@ task helm:template  # Render Helm chart templates
 go test -v -run TestFunctionName ./path/to/package
 
 # Helm install
-helm install airq-exporter ./charts/airq-exporter --set config.airqDataUrl=<URL>
+helm install m5stack-airq-exporter ./charts/m5stack-airq-exporter --set config.airqDataUrl=<URL>
 ```
+
+## Release Process
+
+```bash
+# 1. Create release (updates Chart.yaml, commits, and tags)
+task release VERSION=0.1.0
+
+# 2. Push to trigger GitHub Actions
+git push && git push --tags
+```
+
+GitHub Actions will:
+- Run tests
+- Build and push Docker image to `ghcr.io/suzutan/m5stack_airq_exporter:v0.1.0`
+
+Helm chart uses `appVersion` as the default image tag.
 
 ## Architecture (Clean Architecture + DI)
 
