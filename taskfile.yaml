@@ -104,6 +104,6 @@ tasks:
       - sed -i 's/^version:.*/version:\ {{.VERSION}}/' charts/m5stack-airq-exporter/Chart.yaml
       - sed -i 's/^appVersion:.*/appVersion:\ "{{.VERSION}}"/' charts/m5stack-airq-exporter/Chart.yaml
       - git add charts/m5stack-airq-exporter/Chart.yaml
-      - git commit -m "Release v{{.VERSION}}"
+      - git diff --cached --quiet || git commit -m "Release v{{.VERSION}}"
       - git tag -a v{{.VERSION}} -m "Release v{{.VERSION}}"
       - echo "Release v{{.VERSION}} created. Run 'git push && git push --tags' to publish."
