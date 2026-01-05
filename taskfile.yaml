@@ -75,12 +75,12 @@ tasks:
   helm:lint:
     desc: Lint Helm chart
     cmds:
-      - helm lint ./charts/airq-exporter --set config.airqDataUrl={{.AIRQ_DATA_URL}}
+      - helm lint ./charts/m5stack-airq-exporter --set config.airqDataUrl={{.AIRQ_DATA_URL}}
 
   helm:template:
     desc: Render Helm chart templates
     cmds:
-      - helm template airq-exporter ./charts/airq-exporter --set config.airqDataUrl={{.AIRQ_DATA_URL}}
+      - helm template m5stack-airq-exporter ./charts/m5stack-airq-exporter --set config.airqDataUrl={{.AIRQ_DATA_URL}}
 
   ci:
     desc: Run CI pipeline locally (clean, tidy, fmt, vet, test, build)

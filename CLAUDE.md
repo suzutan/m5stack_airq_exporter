@@ -55,7 +55,7 @@ helm install airq-exporter ./charts/airq-exporter --set config.airqDataUrl=<URL>
 │   ├── di/                    # Dependency injection container
 │   ├── http/                  # Echo server setup
 │   └── scheduler/             # Periodic task scheduler
-├── charts/airq-exporter/      # Helm chart for Kubernetes
+├── charts/m5stack-airq-exporter/  # Helm chart for Kubernetes
 └── .github/workflows/         # CI/CD pipelines
 ```
 
