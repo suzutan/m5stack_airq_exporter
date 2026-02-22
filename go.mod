@@ -3,7 +3,7 @@ module github.com/suzutan/m5stack_airq_exporter
 go 1.25.4
 
 require (
-	github.com/labstack/echo/v4 v4.15.0
+	github.com/labstack/echo/v4 v4.15.1
 	github.com/prometheus/client_golang v1.23.2
 )
 
