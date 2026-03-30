@@ -3,7 +3,7 @@ package handler
 import (
 	"net/http"
 
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 )
 
 // HealthHandler handles health check endpoints
@@ -15,11 +15,11 @@ func NewHealthHandler() *HealthHandler {
 }
 
 // HandleLiveness handles the /healthz endpoint for liveness probe
-func (h *HealthHandler) HandleLiveness(c echo.Context) error {
+func (h *HealthHandler) HandleLiveness(c *echo.Context) error {
 	return c.JSON(http.StatusOK, map[string]string{"status": "ok"})
 }
 
 // HandleReadiness handles the /readyz endpoint for readiness probe
-func (h *HealthHandler) HandleReadiness(c echo.Context) error {
+func (h *HealthHandler) HandleReadiness(c *echo.Context) error {
 	return c.JSON(http.StatusOK, map[string]string{"status": "ok"})
 }

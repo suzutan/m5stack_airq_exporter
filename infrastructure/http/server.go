@@ -3,8 +3,8 @@ package http
 import (
 	"context"
 
-	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
+	"github.com/labstack/echo/v5"
+	"github.com/labstack/echo/v5/middleware"
 	"github.com/suzutan/m5stack_airq_exporter/infrastructure/di"
 )
 
@@ -17,10 +17,9 @@ type Server struct {
 // NewServer creates a new HTTP server with the given container
 func NewServer(container *di.Container) *Server {
 	e := echo.New()
-	e.HideBanner = true
 
 	// Middleware
-	e.Use(middleware.Logger())
+	e.Use(middleware.RequestLogger())
 	e.Use(middleware.Recover())
 
 	// Routes
@@ -34,14 +33,14 @@ func NewServer(container *di.Container) *Server {
 	}
 }
 
-// Start starts the HTTP server
-func (s *Server) Start(address string) error {
-	return s.echo.Start(address)
-}
-
-// Shutdown gracefully shuts down the server
-func (s *Server) Shutdown(ctx context.Context) error {
-	return s.echo.Shutdown(ctx)
+// Start starts the HTTP server with graceful shutdown support.
+// It blocks until the context is canceled and the server shuts down.
+func (s *Server) Start(ctx context.Context, address string) error {
+	sc := echo.StartConfig{
+		Address:    address,
+		HideBanner: true,
+	}
+	return sc.Start(ctx, s.echo)
 }
 
 // Echo returns the underlying echo instance (for testing)

@@ -33,39 +33,17 @@ func main() {
 	// Create scheduler for periodic data fetch (1 minute interval)
 	sched := scheduler.NewScheduler(container.FetchAirQUsecase, 1*time.Minute)
 
-	// Create context that will be canceled on shutdown
-	ctx, cancel := context.WithCancel(context.Background())
+	// Create context that will be canceled on shutdown signal
+	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer cancel()
 
 	// Start scheduler in background
 	go sched.Start(ctx)
 
-	// Handle graceful shutdown
-	go func() {
-		sigCh := make(chan os.Signal, 1)
-		signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
-		<-sigCh
-		log.Println("Shutting down...")
-
-		// Create shutdown context with timeout
-		shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 10*time.Second)
-		defer shutdownCancel()
-
-		// Shutdown HTTP server
-		if err := server.Shutdown(shutdownCtx); err != nil {
-			log.Printf("HTTP server shutdown error: %v", err)
-		}
-
-		// Cancel main context to stop scheduler
-		cancel()
-	}()
-
-	// Start HTTP server
+	// Start HTTP server (blocks until context is canceled and graceful shutdown completes)
 	log.Printf("Starting server on :%s", config.Port)
-	if err := server.Start(":" + config.Port); err != nil {
-		if err.Error() != "http: Server closed" {
-			log.Fatalf("Failed to start server: %v", err)
-		}
+	if err := server.Start(ctx, ":"+config.Port); err != nil {
+		log.Fatalf("Failed to start server: %v", err)
 	}
 
 	log.Println("Server stopped")

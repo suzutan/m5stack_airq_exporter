@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
@@ -20,6 +20,6 @@ func NewMetricsHandler(registry prometheus.Gatherer) *MetricsHandler {
 }
 
 // Handle processes the metrics request
-func (h *MetricsHandler) Handle(c echo.Context) error {
+func (h *MetricsHandler) Handle(c *echo.Context) error {
 	return h.handler(c)
 }
