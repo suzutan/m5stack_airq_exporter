@@ -13,14 +13,14 @@ tasks:
   build:
     desc: Build the application
     cmds:
-      - go build -o {{.BINARY_NAME}} ./cmd/exporter
+      - go build -o {{.BINARY_NAME}} .
 
   run:
     desc: Run the application locally
     env:
       AIRQ_DATA_URL: '{{.AIRQ_DATA_URL}}'
     cmds:
-      - go run ./cmd/exporter
+      - go run .
 
   test:
     desc: Run all tests

@@ -1,4 +1,4 @@
-package gateway
+package main
 
 import (
 	"context"
@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-func TestAirQHTTPGateway_Fetch_Success(t *testing.T) {
+func TestFetchAirQuality_Success(t *testing.T) {
 	responseJSON := `{
 		"code": 200,
 		"msg": "OK",
@@ -28,8 +28,7 @@ func TestAirQHTTPGateway_Fetch_Success(t *testing.T) {
 	}))
 	defer server.Close()
 
-	gateway := NewAirQHTTPGateway(server.URL, server.Client())
-	data, err := gateway.Fetch(context.Background())
+	data, err := FetchAirQuality(context.Background(), server.URL, server.Client())
 
 	if err != nil {
 		t.Fatalf("expected no error, got %v", err)
@@ -73,7 +72,7 @@ func TestAirQHTTPGateway_Fetch_Success(t *testing.T) {
 	}
 }
 
-func TestAirQHTTPGateway_Fetch_DoubleEscapedJSON(t *testing.T) {
+func TestFetchAirQuality_DoubleEscapedJSON(t *testing.T) {
 	// This is the actual format returned by ezdata2.m5stack.com API
 	responseJSON := `{"code":200,"msg":"OK","data":{"dataToken":"test-token","dataType":"string","name":"raw","value":"{\\\"sen55\\\":{\\\"pm1.0\\\":1.5,\\\"pm2.5\\\":2.5,\\\"pm4.0\\\":4.0,\\\"pm10.0\\\":10.0,\\\"humidity\\\":32.54,\\\"temperature\\\":23.42,\\\"voc\\\":75,\\\"nox\\\":1},\\\"scd40\\\":{\\\"co2\\\":725,\\\"humidity\\\":17.99,\\\"temperature\\\":31.01},\\\"rtc\\\":{\\\"sleep_interval\\\":60},\\\"profile\\\":{\\\"nickname\\\":\\\"AirQ\\\"}}","createTime":"1703591914","updateTime":"1767573960"}}`
 
@@ -84,8 +83,7 @@ func TestAirQHTTPGateway_Fetch_DoubleEscapedJSON(t *testing.T) {
 	}))
 	defer server.Close()
 
-	gateway := NewAirQHTTPGateway(server.URL, server.Client())
-	data, err := gateway.Fetch(context.Background())
+	data, err := FetchAirQuality(context.Background(), server.URL, server.Client())
 
 	if err != nil {
 		t.Fatalf("expected no error, got %v", err)
@@ -102,21 +100,20 @@ func TestAirQHTTPGateway_Fetch_DoubleEscapedJSON(t *testing.T) {
 	}
 }
 
-func TestAirQHTTPGateway_Fetch_HTTPError(t *testing.T) {
+func TestFetchAirQuality_HTTPError(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 	}))
 	defer server.Close()
 
-	gateway := NewAirQHTTPGateway(server.URL, server.Client())
-	_, err := gateway.Fetch(context.Background())
+	_, err := FetchAirQuality(context.Background(), server.URL, server.Client())
 
 	if err == nil {
 		t.Error("expected error, got nil")
 	}
 }
 
-func TestAirQHTTPGateway_Fetch_InvalidJSON(t *testing.T) {
+func TestFetchAirQuality_InvalidJSON(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
@@ -124,15 +121,14 @@ func TestAirQHTTPGateway_Fetch_InvalidJSON(t *testing.T) {
 	}))
 	defer server.Close()
 
-	gateway := NewAirQHTTPGateway(server.URL, server.Client())
-	_, err := gateway.Fetch(context.Background())
+	_, err := FetchAirQuality(context.Background(), server.URL, server.Client())
 
 	if err == nil {
 		t.Error("expected error, got nil")
 	}
 }
 
-func TestAirQHTTPGateway_Fetch_APIError(t *testing.T) {
+func TestFetchAirQuality_APIError(t *testing.T) {
 	responseJSON := `{
 		"code": 500,
 		"msg": "Internal Error",
@@ -146,15 +142,14 @@ func TestAirQHTTPGateway_Fetch_APIError(t *testing.T) {
 	}))
 	defer server.Close()
 
-	gateway := NewAirQHTTPGateway(server.URL, server.Client())
-	_, err := gateway.Fetch(context.Background())
+	_, err := FetchAirQuality(context.Background(), server.URL, server.Client())
 
 	if err == nil {
 		t.Error("expected error, got nil")
 	}
 }
 
-func TestAirQHTTPGateway_Fetch_InvalidSensorData(t *testing.T) {
+func TestFetchAirQuality_InvalidSensorData(t *testing.T) {
 	responseJSON := `{
 		"code": 200,
 		"msg": "OK",
@@ -175,17 +170,15 @@ func TestAirQHTTPGateway_Fetch_InvalidSensorData(t *testing.T) {
 	}))
 	defer server.Close()
 
-	gateway := NewAirQHTTPGateway(server.URL, server.Client())
-	_, err := gateway.Fetch(context.Background())
+	_, err := FetchAirQuality(context.Background(), server.URL, server.Client())
 
 	if err == nil {
 		t.Error("expected error, got nil")
 	}
 }
 
-func TestAirQHTTPGateway_Fetch_ContextCanceled(t *testing.T) {
+func TestFetchAirQuality_ContextCanceled(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// This handler should not be reached
 		t.Error("handler should not be called")
 	}))
 	defer server.Close()
@@ -193,8 +186,7 @@ func TestAirQHTTPGateway_Fetch_ContextCanceled(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel()
 
-	gateway := NewAirQHTTPGateway(server.URL, server.Client())
-	_, err := gateway.Fetch(ctx)
+	_, err := FetchAirQuality(ctx, server.URL, server.Client())
 
 	if err == nil {
 		t.Error("expected error, got nil")

@@ -1,13 +1,11 @@
-package gateway
+package main
 
 import (
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/suzutan/m5stack_airq_exporter/domain/entity"
 )
 
-// PrometheusMetricsGateway implements MetricsRepository using Prometheus client
-type PrometheusMetricsGateway struct {
-	// SEN55 sensor metrics
+// Metrics holds Prometheus gauge metrics for air quality measurements
+type Metrics struct {
 	pm1_0       prometheus.Gauge
 	pm2_5       prometheus.Gauge
 	pm4_0       prometheus.Gauge
@@ -17,15 +15,14 @@ type PrometheusMetricsGateway struct {
 	voc         prometheus.Gauge
 	nox         prometheus.Gauge
 
-	// SCD40 sensor metrics
 	co2              prometheus.Gauge
 	scd40Humidity    prometheus.Gauge
 	scd40Temperature prometheus.Gauge
 }
 
-// NewPrometheusMetricsGateway creates a new PrometheusMetricsGateway and registers metrics
-func NewPrometheusMetricsGateway(registry prometheus.Registerer) *PrometheusMetricsGateway {
-	g := &PrometheusMetricsGateway{
+// NewMetrics creates and registers Prometheus gauge metrics
+func NewMetrics(reg prometheus.Registerer) *Metrics {
+	m := &Metrics{
 		pm1_0: prometheus.NewGauge(prometheus.GaugeOpts{
 			Name: "airq_pm1_0",
 			Help: "PM1.0 concentration in µg/m³",
@@ -72,35 +69,34 @@ func NewPrometheusMetricsGateway(registry prometheus.Registerer) *PrometheusMetr
 		}),
 	}
 
-	// Register all metrics
-	registry.MustRegister(
-		g.pm1_0,
-		g.pm2_5,
-		g.pm4_0,
-		g.pm10_0,
-		g.humidity,
-		g.temperature,
-		g.voc,
-		g.nox,
-		g.co2,
-		g.scd40Humidity,
-		g.scd40Temperature,
+	reg.MustRegister(
+		m.pm1_0,
+		m.pm2_5,
+		m.pm4_0,
+		m.pm10_0,
+		m.humidity,
+		m.temperature,
+		m.voc,
+		m.nox,
+		m.co2,
+		m.scd40Humidity,
+		m.scd40Temperature,
 	)
 
-	return g
+	return m
 }
 
 // Update updates the Prometheus metrics with the given air quality data
-func (g *PrometheusMetricsGateway) Update(data *entity.AirQuality) {
-	g.pm1_0.Set(data.PM1_0)
-	g.pm2_5.Set(data.PM2_5)
-	g.pm4_0.Set(data.PM4_0)
-	g.pm10_0.Set(data.PM10_0)
-	g.humidity.Set(data.Humidity)
-	g.temperature.Set(data.Temperature)
-	g.voc.Set(float64(data.VOC))
-	g.nox.Set(float64(data.NOx))
-	g.co2.Set(float64(data.CO2))
-	g.scd40Humidity.Set(data.SCD40Humidity)
-	g.scd40Temperature.Set(data.SCD40Temperature)
+func (m *Metrics) Update(data *AirQuality) {
+	m.pm1_0.Set(data.PM1_0)
+	m.pm2_5.Set(data.PM2_5)
+	m.pm4_0.Set(data.PM4_0)
+	m.pm10_0.Set(data.PM10_0)
+	m.humidity.Set(data.Humidity)
+	m.temperature.Set(data.Temperature)
+	m.voc.Set(float64(data.VOC))
+	m.nox.Set(float64(data.NOx))
+	m.co2.Set(float64(data.CO2))
+	m.scd40Humidity.Set(data.SCD40Humidity)
+	m.scd40Temperature.Set(data.SCD40Temperature)
 }
