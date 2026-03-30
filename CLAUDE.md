@@ -36,7 +36,7 @@ task release VERSION=x.y.z  # Create a new release
 
 ```bash
 # Run single test
-go test -v -run TestFunctionName ./path/to/package
+go test -v -run TestFunctionName .
 
 # Helm install
 helm install m5stack-airq-exporter ./charts/m5stack-airq-exporter --set config.airqDataUrl=<URL>
@@ -56,38 +56,25 @@ GitHub Actions (release.yaml) will:
 
 Helm chart uses `appVersion` as the default image tag.
 
-## Architecture (Clean Architecture + DI)
+## Architecture
+
+Flat single-package structure using `net/http` (no framework).
 
 ```
-├── cmd/exporter/              # Application entrypoint with DI wiring
-├── domain/
-│   ├── entity/                # Business entities (AirQuality)
-│   └── repository/            # Repository interfaces (ports)
-├── usecase/                   # Application business logic (interactors)
-├── adapter/
-│   ├── gateway/               # Repository implementations (AirQ HTTP, Prometheus)
-│   └── handler/               # HTTP handlers (metrics, health)
-├── infrastructure/
-│   ├── di/                    # Dependency injection container
-│   ├── http/                  # Echo server setup
-│   └── scheduler/             # Periodic task scheduler
+├── main.go           # Entrypoint + HTTP server + scheduler
+├── airq.go           # AirQuality struct + API fetch function
+├── airq_test.go      # API fetch tests (7 scenarios)
+├── metrics.go        # Prometheus metrics definition & update
+├── metrics_test.go   # Metrics tests (2 scenarios)
 ├── charts/m5stack-airq-exporter/  # Helm chart for Kubernetes
-└── .github/workflows/         # CI/CD pipelines
-```
-
-### Layer Dependencies
-
-```
-cmd/exporter → infrastructure/di → usecase → domain
-                                 → adapter  → domain
+└── .github/workflows/             # CI/CD pipelines
 ```
 
 ### Data Flow
 
-1. **Scheduler** (1-minute interval) triggers `FetchAirQUsecase.Execute()`
-2. **AirQHTTPGateway** (implements `AirQRepository`) fetches JSON from API
-3. **PrometheusMetricsGateway** (implements `MetricsRepository`) updates gauge metrics
-4. **Echo Server** serves `/metrics` endpoint via `MetricsHandler`
+1. **Scheduler goroutine** (1-minute interval) calls `FetchAirQuality()` to fetch JSON from M5Stack API
+2. **`Metrics.Update()`** updates 11 Prometheus gauge metrics
+3. **`net/http` server** serves `/metrics`, `/healthz`, `/readyz` endpoints
 
 ## Environment Variables
 
@@ -98,6 +85,5 @@ cmd/exporter → infrastructure/di → usecase → domain
 
 ## Testing Strategy
 
-- Repository interfaces enable easy mocking in usecase tests
-- `httptest.Server` for HTTP gateway tests
-- `prometheus/testutil` for metrics gateway tests
+- `httptest.Server` for API fetch tests
+- `prometheus/testutil` for metrics tests

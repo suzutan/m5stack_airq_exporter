@@ -1,4 +1,4 @@
-package gateway
+package main
 
 import (
 	"context"
@@ -7,27 +7,27 @@ import (
 	"io"
 	"net/http"
 	"strconv"
-
-	"github.com/suzutan/m5stack_airq_exporter/domain/entity"
 )
 
-// HTTPClient interface for HTTP client operations (allows mocking)
-type HTTPClient interface {
-	Do(req *http.Request) (*http.Response, error)
-}
+// AirQuality represents air quality measurement data from M5Stack AirQ device
+type AirQuality struct {
+	// SEN55 sensor data (particle and environmental)
+	PM1_0       float64
+	PM2_5       float64
+	PM4_0       float64
+	PM10_0      float64
+	Humidity    float64
+	Temperature float64
+	VOC         int
+	NOx         int
 
-// AirQHTTPGateway implements AirQRepository using HTTP client
-type AirQHTTPGateway struct {
-	url    string
-	client HTTPClient
-}
+	// SCD40 sensor data (CO2 and climate)
+	CO2              int
+	SCD40Humidity    float64
+	SCD40Temperature float64
 
-// NewAirQHTTPGateway creates a new AirQHTTPGateway with the given URL and HTTP client
-func NewAirQHTTPGateway(url string, client HTTPClient) *AirQHTTPGateway {
-	return &AirQHTTPGateway{
-		url:    url,
-		client: client,
-	}
+	// Device info
+	Nickname string
 }
 
 // apiResponse represents the top-level response from ezdata2.m5stack.com API
@@ -55,7 +55,6 @@ type sensorData struct {
 	Profile profileData `json:"profile"`
 }
 
-// sen55Data represents data from the SEN55 sensor
 type sen55Data struct {
 	PM1_0       float64 `json:"pm1.0"`
 	PM2_5       float64 `json:"pm2.5"`
@@ -67,31 +66,28 @@ type sen55Data struct {
 	NOx         int     `json:"nox"`
 }
 
-// scd40Data represents data from the SCD40 sensor
 type scd40Data struct {
 	CO2         int     `json:"co2"`
 	Humidity    float64 `json:"humidity"`
 	Temperature float64 `json:"temperature"`
 }
 
-// rtcData represents real-time clock configuration
 type rtcData struct {
 	SleepInterval int `json:"sleep_interval"`
 }
 
-// profileData represents device profile information
 type profileData struct {
 	Nickname string `json:"nickname"`
 }
 
-// Fetch retrieves the latest air quality data from the API
-func (g *AirQHTTPGateway) Fetch(ctx context.Context) (*entity.AirQuality, error) {
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, g.url, nil)
+// FetchAirQuality retrieves the latest air quality data from the API
+func FetchAirQuality(ctx context.Context, url string, client *http.Client) (*AirQuality, error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
 
-	resp, err := g.client.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("failed to execute request: %w", err)
 	}
@@ -130,7 +126,7 @@ func (g *AirQHTTPGateway) Fetch(ctx context.Context) (*entity.AirQuality, error)
 		return nil, fmt.Errorf("failed to parse sensor data: %w", err)
 	}
 
-	return &entity.AirQuality{
+	return &AirQuality{
 		PM1_0:            sensor.SEN55.PM1_0,
 		PM2_5:            sensor.SEN55.PM2_5,
 		PM4_0:            sensor.SEN55.PM4_0,
