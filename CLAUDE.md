@@ -44,15 +44,17 @@ helm install m5stack-airq-exporter ./charts/m5stack-airq-exporter --set config.a
 
 ## Release Process
 
-```bash
-# Create and push tag (triggers GitHub Actions)
-task release VERSION=0.2.0
-```
+Releases are automated via conventional commits. When a PR is merged to master:
 
-GitHub Actions (release.yaml) will:
-1. Run tests
-2. Build and push Docker image to `ghcr.io/suzutan/m5stack_airq_exporter:<version>`
-3. Update `charts/m5stack-airq-exporter/Chart.yaml` (version, appVersion) and push to master
+1. `auto-release.yaml` parses commit messages since the last tag
+2. Determines version bump: `feat:` → minor, `fix:` → patch, `!`/`BREAKING CHANGE` → major
+3. If a bump is needed: creates tag, builds/pushes Docker image, updates Helm chart, creates GitHub Release
+4. Commits without `feat:`/`fix:` prefix (e.g. `chore:`, `docs:`, `ci:`) do **not** trigger a release
+
+```bash
+# Manual release (alternative, triggers release.yaml via tag)
+task release VERSION=0.3.0
+```
 
 Helm chart uses `appVersion` as the default image tag.
 
