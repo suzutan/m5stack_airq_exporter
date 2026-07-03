@@ -37,10 +37,12 @@ func main() {
 		fetch := func() {
 			data, err := FetchAirQuality(ctx, url, client)
 			if err != nil {
+				metrics.RecordScrapeError()
 				log.Printf("Failed to fetch air quality data: %v", err)
 				return
 			}
 			metrics.Update(data)
+			metrics.RecordScrapeSuccess()
 			log.Println("Successfully fetched air quality data")
 		}
 

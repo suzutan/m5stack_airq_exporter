@@ -34,6 +34,9 @@ A Prometheus exporter for [M5Stack AirQ](https://docs.m5stack.com/en/unit/airq) 
 | `airq_co2` | Gauge | CO2 concentration from SCD40 (ppm) |
 | `airq_scd40_humidity` | Gauge | Relative humidity from SCD40 (%) |
 | `airq_scd40_temperature` | Gauge | Temperature from SCD40 (°C) |
+| `airq_scrape_success` | Gauge | Whether the last fetch succeeded (1) or failed (0) |
+| `airq_last_scrape_success_timestamp_seconds` | Gauge | Unix timestamp of the last successful fetch |
+| `airq_scrape_errors_total` | Counter | Total number of failed fetches |
 
 ## Quick Start
 
