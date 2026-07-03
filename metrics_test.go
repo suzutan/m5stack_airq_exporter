@@ -166,3 +166,48 @@ func TestMetrics_UpdateMultipleTimes(t *testing.T) {
 		t.Errorf("CO2 metric should be updated: %v", err)
 	}
 }
+
+func TestMetrics_RecordScrapeError(t *testing.T) {
+	registry := prometheus.NewRegistry()
+	metrics := NewMetrics(registry)
+
+	metrics.RecordScrapeError()
+
+	expected := `
+		# HELP airq_scrape_success Whether the last fetch of air quality data succeeded (1) or failed (0)
+		# TYPE airq_scrape_success gauge
+		airq_scrape_success 0
+	`
+	if err := testutil.CollectAndCompare(metrics.scrapeSuccess, strings.NewReader(expected)); err != nil {
+		t.Errorf("Scrape success metric mismatch: %v", err)
+	}
+
+	expected = `
+		# HELP airq_scrape_errors_total Total number of failed fetches of air quality data
+		# TYPE airq_scrape_errors_total counter
+		airq_scrape_errors_total 1
+	`
+	if err := testutil.CollectAndCompare(metrics.scrapeErrors, strings.NewReader(expected)); err != nil {
+		t.Errorf("Scrape errors metric mismatch: %v", err)
+	}
+}
+
+func TestMetrics_RecordScrapeSuccess(t *testing.T) {
+	registry := prometheus.NewRegistry()
+	metrics := NewMetrics(registry)
+
+	metrics.RecordScrapeSuccess()
+
+	expected := `
+		# HELP airq_scrape_success Whether the last fetch of air quality data succeeded (1) or failed (0)
+		# TYPE airq_scrape_success gauge
+		airq_scrape_success 1
+	`
+	if err := testutil.CollectAndCompare(metrics.scrapeSuccess, strings.NewReader(expected)); err != nil {
+		t.Errorf("Scrape success metric mismatch: %v", err)
+	}
+
+	if ts := testutil.ToFloat64(metrics.lastScrapeSuccessTimestamp); ts <= 0 {
+		t.Errorf("Last scrape success timestamp should be greater than 0, got %v", ts)
+	}
+}
