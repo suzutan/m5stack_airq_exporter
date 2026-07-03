@@ -16,7 +16,7 @@ A Prometheus exporter for [M5Stack AirQ](https://docs.m5stack.com/en/unit/airq) 
 - Health check endpoints (`/healthz`, `/readyz`)
 - Multi-architecture Docker image (amd64, arm64)
 - Helm chart with ServiceMonitor support for Prometheus Operator
-- Clean Architecture with Dependency Injection
+- Simple flat single-package layout
 - Graceful shutdown handling
 
 ## Metrics
@@ -206,21 +206,13 @@ This will:
 
 ```
 .
-├── cmd/exporter/          # Application entrypoint
-├── domain/
-│   ├── entity/            # Domain entities (AirQuality)
-│   └── repository/        # Repository interfaces
-├── usecase/               # Business logic (FetchAirQualityUseCase)
-├── adapter/
-│   ├── gateway/           # External service implementations
-│   │   ├── airq_http.go   # M5Stack API client
-│   │   └── prometheus_metrics.go
-│   └── handler/           # HTTP handlers
-├── infrastructure/
-│   ├── di/                # Dependency injection container
-│   ├── http/              # Echo HTTP server setup
-│   └── scheduler/         # Periodic data fetch scheduler
-└── charts/                # Helm chart
+├── main.go         # Entrypoint: 1-minute fetch scheduler and HTTP server
+├── main_test.go
+├── airq.go         # M5Stack EzData API client
+├── airq_test.go
+├── metrics.go      # Prometheus metrics definitions
+├── metrics_test.go
+└── charts/         # Helm chart
 ```
 
 ## License
