@@ -1,4 +1,4 @@
-# CLAUDE.md
+# AGENTS.md
 
 M5Stack AirQ Prometheus Exporter — Go application, flat single-package structure.
 
